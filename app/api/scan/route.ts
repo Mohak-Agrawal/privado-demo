@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { scanCode, MOCK_RESULT } from "@/lib/scan"
 
+export const maxDuration = 60
+
 const MAX_CODE_BYTES = 500_000
 const DEMO_KEY = "__demo__"
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { generateReport } from "@/lib/report"
 import type { Finding } from "@/lib/types"
 
+export const maxDuration = 60
+
 const VALID_RISK_LEVELS = new Set(["high", "medium", "low"])
 const MAX_FINDINGS = 50
 
