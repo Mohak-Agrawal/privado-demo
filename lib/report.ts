@@ -49,5 +49,6 @@ Write the report with EXACTLY these five sections, using these exact headers:
 Use formal compliance language throughout. Do not use bullet points in Risk Analysis — only in Remediation.`,
   })
 
+  console.log("[report] tokens — in:", interaction.usage?.total_input_tokens, "out:", interaction.usage?.total_output_tokens, "total:", interaction.usage?.total_tokens)
   return interaction.output_text ?? ""
 }

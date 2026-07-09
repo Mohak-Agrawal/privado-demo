@@ -98,6 +98,7 @@ ${input.code}
     input: `${SYSTEM_PROMPT}\n\n${userPrompt}`,
   })
 
+  console.log("[scan] tokens — in:", interaction.usage?.total_input_tokens, "out:", interaction.usage?.total_output_tokens, "total:", interaction.usage?.total_tokens)
   const raw = interaction.output_text ?? ""
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, "")

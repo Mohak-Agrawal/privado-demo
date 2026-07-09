@@ -106,7 +106,7 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0A0A0F" }}>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#0A0A0F" }}>
 
       {/* Header */}
       <header className="relative border-b border-[#1E1E2E] bg-[#0A0A0F]/90 backdrop-blur-sm sticky top-0 z-20">
@@ -176,7 +176,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col max-w-screen-2xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-5 gap-3 sm:gap-4">
+      <main className="flex-1 flex flex-col min-h-0 max-w-screen-2xl mx-auto w-full px-4 sm:px-6 py-4 sm:py-5 gap-3 sm:gap-4">
 
         {/* Mock warning banner */}
         {appState === "done" && result?._isMock && view === "findings" && (
@@ -237,8 +237,8 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr_1fr] gap-3 sm:gap-4 flex-1 min-h-0">
 
               {/* Source panel */}
-              <div className={`flex-col rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
-                mobileTab === "source" ? "flex" : "hidden md:flex"
+              <div className={`flex flex-col min-h-0 rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
+                mobileTab === "source" ? "" : "hidden md:flex"
               }`}>
                 <div className="px-4 py-3 border-b border-[#1E1E2E] flex items-center gap-2">
                   <svg className="w-3.5 h-3.5 text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -252,8 +252,8 @@ export default function Home() {
               </div>
 
               {/* Findings panel */}
-              <div className={`flex-col rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
-                mobileTab === "findings" ? "flex" : "hidden md:flex"
+              <div className={`flex flex-col min-h-0 rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
+                mobileTab === "findings" ? "" : "hidden md:flex"
               }`}>
                 <div className="px-4 py-3 border-b border-[#1E1E2E] flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -279,8 +279,8 @@ export default function Home() {
               </div>
 
               {/* Assessment panel */}
-              <div className={`flex-col rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
-                mobileTab === "assessment" ? "flex" : "hidden md:flex"
+              <div className={`flex flex-col min-h-0 rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
+                mobileTab === "assessment" ? "" : "hidden md:flex"
               }`}>
                 <div className="px-4 py-3 border-b border-[#1E1E2E] flex items-center gap-2">
                   <svg className="w-3.5 h-3.5 text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
