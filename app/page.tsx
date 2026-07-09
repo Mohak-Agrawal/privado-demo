@@ -131,6 +131,26 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            {/* API key indicator */}
+            <button
+              onClick={() => {
+                localStorage.removeItem(LS_KEY)
+                setApiKey(null)
+              }}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#1E1E2E] hover:border-[#2D2D3D] hover:bg-[#111118] transition-all cursor-pointer group"
+              title="Change API key"
+            >
+              <svg className="w-3 h-3 text-[#334155] group-hover:text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+              </svg>
+              <span className="font-mono text-[10px] text-[#334155] group-hover:text-[#475569]">
+                {apiKey === "__demo__" ? "demo mode" : `${apiKey.slice(0, 6)}···${apiKey.slice(-3)}`}
+              </span>
+              <svg className="w-2.5 h-2.5 text-[#334155] group-hover:text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+              </svg>
+            </button>
+
             {appState === "done" && result && view === "findings" && (
               <>
                 <span className="hidden md:flex items-center gap-1.5 text-[11px] text-[#475569] mr-1">
