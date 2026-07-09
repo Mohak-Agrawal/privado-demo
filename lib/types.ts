@@ -22,6 +22,8 @@ export type ScanResult = {
     low: number
     topThirdParties: string[]
   }
+  _isMock?: boolean
+  _mockReason?: string
 }
 
 export type ScanInput = {

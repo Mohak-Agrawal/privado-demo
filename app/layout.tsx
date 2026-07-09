@@ -1,22 +1,22 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { DM_Sans } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+const font = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-sans",
+})
 
 export const metadata: Metadata = {
-  title: "Privacy Assessment Copilot",
+  title: "Privado Demo",
   description: "Scan source code for privacy risks and generate compliance assessments",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen`} style={{ background: "#0A0E1A", color: "#F9FAFB" }}>
+    <html lang="en" className={font.variable}>
+      <body className="font-sans min-h-screen" style={{ background: "#020617", color: "#F8FAFC", fontFamily: "var(--font-sans)" }}>
         {children}
       </body>
     </html>
