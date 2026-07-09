@@ -166,7 +166,11 @@ export default function Home() {
             </svg>
             <div>
               <p className="text-xs font-semibold text-amber-400">Demo mode — {result._mockReason}</p>
-              <p className="text-[11px] text-amber-700 mt-0.5">Check your Gemini API key. Findings below are sample data for illustration only.</p>
+              <p className="text-[11px] text-amber-700 mt-0.5">
+                {result._mockReason?.includes("Rate limit")
+                  ? "Free tier allows ~30 requests/min. Wait a moment then scan again."
+                  : "Check your Gemini API key is valid. Findings below are sample data for illustration only."}
+              </p>
             </div>
           </div>
         )}

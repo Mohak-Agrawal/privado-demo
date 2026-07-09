@@ -30,8 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result)
   } catch (err) {
     const raw = err instanceof Error ? err.message : ""
-    const reason = raw.includes("API key") || raw.includes("401") || raw.includes("403")
+    const reason = raw.includes("401") || raw.includes("403") || raw.includes("API key")
       ? "Invalid or expired API key — showing demo data"
+      : raw.includes("429") || raw.includes("TooManyRequests") || raw.includes("quota") || raw.includes("rate")
+      ? "Rate limit hit — free tier quota exceeded, showing demo data"
       : "Scan failed — showing demo data"
 
     const mock = {
