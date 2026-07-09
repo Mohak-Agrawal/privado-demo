@@ -19,7 +19,7 @@ Finding ${i + 1}:
   const lowCount = findings.filter(f => f.riskLevel === "low").length
 
   const response = await client.models.generateContent({
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-1.5-flash",
     contents: `Generate a structured DPIA report for the following code scan findings.
 
 Source: ${source}

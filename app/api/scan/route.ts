@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       ? "Invalid or expired API key — showing demo data"
       : raw.includes("429") || raw.includes("RESOURCE_EXHAUSTED") || raw.includes("TooManyRequests")
       ? "Rate limit hit — wait a moment and try again, showing demo data"
-      : `Scan error — showing demo data [${raw.slice(0, 120)}]`
+      : "Scan failed — showing demo data"
 
     const mock = {
       ...MOCK_RESULT,
