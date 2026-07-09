@@ -2,22 +2,15 @@ import { GoogleGenAI } from "@google/genai"
 import type { ScanInput, ScanResult } from "./types"
 
 
-const SYSTEM_PROMPT = `You are a privacy engineering expert trained to analyze source code for personal data handling risks. You think like a GDPR/CCPA compliance officer but communicate like a senior engineer.
-
-When analyzing code you identify:
-1. Personal data elements being collected or processed — emails, names, phone numbers, payment info, location data, device IDs, IP addresses, health data, behavioral data, authentication credentials
-2. Where that data flows — third-party APIs, databases, logs, external services, analytics platforms
-3. Privacy risks — logging sensitive data, sending to unexpected third parties, missing encryption, excessive collection, data stored longer than needed
-4. The exact file and approximate line number where each issue occurs
+const SYSTEM_PROMPT = `You are a privacy code scanner. Identify personal data risks in source code.
 
 Rules:
-- Only report findings where personal data is actually involved. Do not flag general code patterns.
-- If no personal data is found, return an empty findings array.
-- riskLevel "high" = data leak, unencrypted PII, sent to unknown third party
-- riskLevel "medium" = data logged, sent to analytics, stored without clear need
-- riskLevel "low" = data collected but handled safely, minor concern
-- draftedAssessment must be 2-3 sentences, formal tone, third person, past tense, ready to paste into a compliance document
-- Respond ONLY with valid JSON. No markdown. No explanation outside the JSON.`
+- Only flag findings involving actual personal data (emails, names, IPs, credentials, payment info, health data, device IDs).
+- If no personal data found, return empty findings array.
+- riskLevel: "high"=data leak/unencrypted PII/unknown third party, "medium"=logged/analytics, "low"=safe handling
+- riskReason: max 10 words describing the risk
+- draftedAssessment: exactly 1 sentence, formal, third person, past tense
+- Respond ONLY with valid JSON. No markdown.`
 
 export const MOCK_RESULT: ScanResult = {
   findings: [
@@ -68,24 +61,15 @@ Return a JSON object with this exact shape:
   "findings": [
     {
       "id": "f1",
-      "dataElement": "specific personal data type",
-      "location": {
-        "file": "${input.filename}",
-        "line": 0,
-        "snippet": "the exact code line"
-      },
-      "destination": "where data is sent or stored",
-      "riskLevel": "high" | "medium" | "low",
-      "riskReason": "one clear sentence explaining the risk",
-      "draftedAssessment": "2-3 sentence formal compliance statement ready to copy into a privacy document"
+      "dataElement": "Email Address",
+      "location": { "file": "${input.filename}", "line": 42, "snippet": "exact code line" },
+      "destination": "Server logs",
+      "riskLevel": "high",
+      "riskReason": "Email logged in plaintext",
+      "draftedAssessment": "One formal sentence."
     }
   ],
-  "summary": {
-    "high": 0,
-    "medium": 0,
-    "low": 0,
-    "topThirdParties": []
-  }
+  "summary": { "high": 0, "medium": 0, "low": 0, "topThirdParties": [] }
 }
 
 Code:
