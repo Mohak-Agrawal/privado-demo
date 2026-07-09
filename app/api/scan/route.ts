@@ -42,13 +42,13 @@ export async function POST(req: NextRequest) {
     const result = await scanCode({ code: body.code, filename: body.filename }, apiKey)
     return NextResponse.json(result)
   } catch (err) {
-    console.error("[scan] Gemini error:", err)
-    const raw = err instanceof Error ? err.message : ""
-    const reason = raw.includes("401") || raw.includes("403") || raw.includes("API_KEY_INVALID") || raw.includes("API key not valid")
+    const raw = err instanceof Error ? err.message : String(err)
+    console.error("[scan] Gemini error:", raw)
+    const reason = raw.includes("API_KEY_INVALID") || raw.includes("API key not valid") || raw.includes("401") || raw.includes("403")
       ? "Invalid or expired API key — showing demo data"
       : raw.includes("429") || raw.includes("RESOURCE_EXHAUSTED") || raw.includes("TooManyRequests")
       ? "Rate limit hit — wait a moment and try again, showing demo data"
-      : "Scan failed — showing demo data"
+      : `Scan error — showing demo data [${raw.slice(0, 120)}]`
 
     const mock = {
       ...MOCK_RESULT,
