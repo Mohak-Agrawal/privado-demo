@@ -19,7 +19,7 @@ Finding ${i + 1}:
   const lowCount = findings.filter(f => f.riskLevel === "low").length
 
   const interaction = await client.interactions.create({
-    model: "gemini-2.0-flash",
+    model: "gemini-3.5-flash",
     input: `You are a Data Protection Officer (DPO) drafting formal Data Protection Impact Assessments (DPIAs). Write in formal, third-person, past-tense compliance language. Use precise legal terminology. Be specific about findings — do not be vague.
 
 Generate a structured DPIA report for the following code scan findings.
