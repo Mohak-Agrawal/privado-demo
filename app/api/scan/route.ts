@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server"
-import { scanCodeStream, MOCK_RESULT } from "@/lib/scan"
+import { NextRequest, NextResponse } from "next/server"
+import { scanCode, MOCK_RESULT } from "@/lib/scan"
 
-export const maxDuration = 60
+export const runtime = "edge"
 
 const MAX_CODE_BYTES = 500_000
 const DEMO_KEY = "__demo__"
@@ -11,22 +11,22 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid request body" }), { status: 400, headers: { "Content-Type": "application/json" } })
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
   if (!body.code || !body.filename) {
-    return new Response(JSON.stringify({ error: "Missing required fields: code and filename" }), { status: 400, headers: { "Content-Type": "application/json" } })
+    return NextResponse.json({ error: "Missing required fields: code and filename" }, { status: 400 })
   }
 
   if (body.code.length > MAX_CODE_BYTES) {
-    return new Response(JSON.stringify({ error: "Code too large — maximum 500 KB" }), { status: 413, headers: { "Content-Type": "application/json" } })
+    return NextResponse.json({ error: "Code too large — maximum 500 KB" }, { status: 413 })
   }
 
   if (body.filename.length > 255) {
-    return new Response(JSON.stringify({ error: "Filename too long" }), { status: 400, headers: { "Content-Type": "application/json" } })
+    return NextResponse.json({ error: "Filename too long" }, { status: 400 })
   }
 
-  const apiKey = req.headers.get("x-gemini-key") ?? process.env.GEMINI_API_KEY ?? ""
+  const apiKey = req.headers.get("x-gemini-key") ?? ""
 
   const mockWithFile = {
     ...MOCK_RESULT,
@@ -34,31 +34,20 @@ export async function POST(req: NextRequest) {
   }
 
   if (apiKey === DEMO_KEY) {
-    return new Response(JSON.stringify({ ...mockWithFile, _isMock: true, _mockReason: "Demo mode — sample data for illustration" }), {
-      headers: { "Content-Type": "application/json" },
-    })
+    return NextResponse.json({ ...mockWithFile, _isMock: true, _mockReason: "Demo mode — sample data for illustration" })
   }
 
-  const encoder = new TextEncoder()
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const chunk of scanCodeStream({ code: body.code!, filename: body.filename! }, apiKey)) {
-          controller.enqueue(encoder.encode(chunk))
-        }
-      } catch (err) {
-        const raw = err instanceof Error ? err.message : String(err)
-        console.error("[scan] Gemini error:", raw)
-        const reason = raw.includes("API_KEY_INVALID") || raw.includes("API key not valid") || raw.includes("401") || raw.includes("403")
-          ? "Invalid or expired API key — showing demo data"
-          : raw.includes("429") || raw.includes("RESOURCE_EXHAUSTED") || raw.includes("TooManyRequests")
-          ? "Rate limit hit — showing demo data"
-          : "Scan failed — showing demo data"
-        controller.enqueue(encoder.encode(JSON.stringify({ ...mockWithFile, _isMock: true, _mockReason: reason })))
-      }
-      controller.close()
-    },
-  })
-
-  return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "X-Content-Type-Options": "nosniff" } })
+  try {
+    const result = await scanCode({ code: body.code, filename: body.filename }, apiKey)
+    return NextResponse.json(result)
+  } catch (err) {
+    const raw = err instanceof Error ? err.message : String(err)
+    console.error("[scan] error:", raw)
+    const reason = raw.includes("API_KEY_INVALID") || raw.includes("API key not valid") || raw.includes("401") || raw.includes("403")
+      ? "Invalid or expired API key — showing demo data"
+      : raw.includes("429") || raw.includes("RESOURCE_EXHAUSTED") || raw.includes("TooManyRequests")
+      ? "Rate limit hit — showing demo data"
+      : "Scan failed — showing demo data"
+    return NextResponse.json({ ...mockWithFile, _isMock: true, _mockReason: reason })
+  }
 }

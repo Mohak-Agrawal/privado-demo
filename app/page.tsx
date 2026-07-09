@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import type { Finding, ScanResult } from "@/lib/types"
-import { parseScanResult } from "@/lib/scan"
 import InputPanel from "@/components/InputPanel"
 import FindingsList from "@/components/FindingsList"
 import AssessmentPanel from "@/components/AssessmentPanel"
@@ -62,18 +61,8 @@ export default function Home() {
         const errData = await res.json()
         throw new Error(errData.error ?? "Scan failed")
       }
-      const reader = res.body!.getReader()
-      const decoder = new TextDecoder()
-      let accumulated = ""
-      const ESTIMATED_CHARS = 1200
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        accumulated += decoder.decode(value, { stream: true })
-        setScanProgress(Math.min(90, Math.round((accumulated.length / ESTIMATED_CHARS) * 90)))
-      }
+      const data: ScanResult = await res.json()
       setScanProgress(100)
-      const data = parseScanResult(accumulated)
       setResult(data)
       setSelectedId(data.findings[0]?.id ?? null)
       setAppState("done")
@@ -287,10 +276,7 @@ export default function Home() {
                   </div>
                   {appState === "scanning" && (
                     <div className="h-0.5 bg-[#1E1E2E] mx-4 mb-3 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green-400 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${scanProgress}%` }}
-                      />
+                      <div className="h-full w-1/3 bg-green-400 rounded-full animate-[scan-progress_1.4s_ease-in-out_infinite]" />
                     </div>
                   )}
                 </div>
