@@ -50,44 +50,26 @@ export const MOCK_RESULT: ScanResult = {
   },
 }
 
-export async function scanCode(input: ScanInput, apiKey: string): Promise<ScanResult> {
-  const client = new GoogleGenAI({ apiKey })
-  const userPrompt = `Analyze the following code for privacy risks.
-
-Filename: ${input.filename}
-
-Return a JSON object with this exact shape:
-{
-  "findings": [
-    {
-      "id": "f1",
-      "dataElement": "Email Address",
-      "location": { "file": "${input.filename}", "line": 42, "snippet": "exact code line" },
-      "destination": "Server logs",
-      "riskLevel": "high",
-      "riskReason": "Email logged in plaintext",
-      "draftedAssessment": "One formal sentence."
-    }
-  ],
-  "summary": { "high": 0, "medium": 0, "low": 0, "topThirdParties": [] }
+function buildPrompt(input: ScanInput): string {
+  return `${SYSTEM_PROMPT}\n\nAnalyze the following code for privacy risks.\n\nFilename: ${input.filename}\n\nReturn a JSON object with this exact shape:\n{"findings":[{"id":"f1","dataElement":"Email Address","location":{"file":"${input.filename}","line":42,"snippet":"exact code line"},"destination":"Server logs","riskLevel":"high","riskReason":"Email logged in plaintext","draftedAssessment":"One formal sentence."}],"summary":{"high":0,"medium":0,"low":0,"topThirdParties":[]}}\n\nCode:\n"""\n${input.code}\n"""`
 }
 
-Code:
-"""
-${input.code}
-"""`
-
-  const interaction = await client.interactions.create({
+export async function* scanCodeStream(input: ScanInput, apiKey: string): AsyncGenerator<string> {
+  const client = new GoogleGenAI({ apiKey })
+  const stream = await client.interactions.create({
     model: "gemini-3.5-flash",
-    input: `${SYSTEM_PROMPT}\n\n${userPrompt}`,
+    input: buildPrompt(input),
+    stream: true,
   })
+  for await (const event of stream) {
+    const e = event as { event_type?: string; delta?: { type?: string; text?: string } }
+    if (e.event_type === "step.delta" && e.delta?.type === "text" && e.delta.text) {
+      yield e.delta.text
+    }
+  }
+}
 
-  console.log("[scan] tokens — in:", interaction.usage?.total_input_tokens, "out:", interaction.usage?.total_output_tokens, "total:", interaction.usage?.total_tokens)
-  const raw = interaction.output_text ?? ""
-  const cleaned = raw
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```\s*$/, "")
-    .trim()
-
+export function parseScanResult(raw: string): ScanResult {
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim()
   return JSON.parse(cleaned) as ScanResult
 }

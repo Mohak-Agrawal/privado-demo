@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { Finding, ScanResult } from "@/lib/types"
+import { parseScanResult } from "@/lib/scan"
 import InputPanel from "@/components/InputPanel"
 import FindingsList from "@/components/FindingsList"
 import AssessmentPanel from "@/components/AssessmentPanel"
@@ -20,6 +21,7 @@ export default function Home() {
   // undefined = hydrating, null = no key, string = ready
   const [apiKey, setApiKey] = useState<string | null | undefined>(undefined)
   const [appState, setAppState] = useState<AppState>("idle")
+  const [scanProgress, setScanProgress] = useState(0)
   const [result, setResult] = useState<ScanResult | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [source, setSource] = useState("")
@@ -44,6 +46,7 @@ export default function Home() {
 
   async function handleScan(code: string, filename: string, src: string) {
     setAppState("scanning")
+    setScanProgress(0)
     setResult(null)
     setSelectedId(null)
     setSource(src)
@@ -56,10 +59,21 @@ export default function Home() {
         body: JSON.stringify({ code, filename }),
       })
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error ?? "Scan failed")
+        const errData = await res.json()
+        throw new Error(errData.error ?? "Scan failed")
       }
-      const data: ScanResult = await res.json()
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let accumulated = ""
+      const ESTIMATED_CHARS = 1200
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        accumulated += decoder.decode(value, { stream: true })
+        setScanProgress(Math.min(90, Math.round((accumulated.length / ESTIMATED_CHARS) * 90)))
+      }
+      setScanProgress(100)
+      const data = parseScanResult(accumulated)
       setResult(data)
       setSelectedId(data.findings[0]?.id ?? null)
       setAppState("done")
@@ -255,17 +269,29 @@ export default function Home() {
               <div className={`flex flex-col min-h-0 rounded-xl border border-[#1E1E2E] bg-[#111118] overflow-hidden ${
                 mobileTab === "findings" ? "" : "hidden md:flex"
               }`}>
-                <div className="px-4 py-3 border-b border-[#1E1E2E] flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-3.5 h-3.5 text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                    <span className="text-[10px] font-semibold text-[#475569] uppercase tracking-widest">Findings</span>
+                <div className="border-b border-[#1E1E2E]">
+                  <div className="px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-3.5 h-3.5 text-[#475569]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </svg>
+                      <span className="text-[10px] font-semibold text-[#475569] uppercase tracking-widest">Findings</span>
+                    </div>
+                    {appState === "scanning" ? (
+                      <span className="text-[10px] text-[#475569] tabular-nums">{scanProgress}%</span>
+                    ) : result && result.findings.length > 0 ? (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">
+                        {result.findings.length}
+                      </span>
+                    ) : null}
                   </div>
-                  {result && result.findings.length > 0 && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">
-                      {result.findings.length}
-                    </span>
+                  {appState === "scanning" && (
+                    <div className="h-0.5 bg-[#1E1E2E] mx-4 mb-3 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-400 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${scanProgress}%` }}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 overflow-y-auto p-3">
