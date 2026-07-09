@@ -93,16 +93,12 @@ Code:
 ${input.code}
 """`
 
-  const response = await client.models.generateContent({
+  const interaction = await client.interactions.create({
     model: "gemini-2.0-flash",
-    contents: userPrompt,
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      maxOutputTokens: 2000,
-    },
+    input: `${SYSTEM_PROMPT}\n\n${userPrompt}`,
   })
 
-  const raw = response.text ?? ""
+  const raw = interaction.output_text ?? ""
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```\s*$/, "")

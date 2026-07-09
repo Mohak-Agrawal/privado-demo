@@ -18,9 +18,11 @@ Finding ${i + 1}:
   const medCount = findings.filter(f => f.riskLevel === "medium").length
   const lowCount = findings.filter(f => f.riskLevel === "low").length
 
-  const response = await client.models.generateContent({
+  const interaction = await client.interactions.create({
     model: "gemini-2.0-flash",
-    contents: `Generate a structured DPIA report for the following code scan findings.
+    input: `You are a Data Protection Officer (DPO) drafting formal Data Protection Impact Assessments (DPIAs). Write in formal, third-person, past-tense compliance language. Use precise legal terminology. Be specific about findings — do not be vague.
+
+Generate a structured DPIA report for the following code scan findings.
 
 Source: ${source}
 Findings: ${findings.length} total (${highCount} High, ${medCount} Medium, ${lowCount} Low)
@@ -45,11 +47,7 @@ Write the report with EXACTLY these five sections, using these exact headers:
 (One paragraph. Formal sign-off language. State whether the system meets GDPR/CCPA obligations as-is or requires remediation before processing.)
 
 Use formal compliance language throughout. Do not use bullet points in Risk Analysis — only in Remediation.`,
-    config: {
-      systemInstruction: `You are a Data Protection Officer (DPO) drafting formal Data Protection Impact Assessments (DPIAs). Write in formal, third-person, past-tense compliance language. Use precise legal terminology. Be specific about findings — do not be vague.`,
-      maxOutputTokens: 2000,
-    },
   })
 
-  return response.text ?? ""
+  return interaction.output_text ?? ""
 }
