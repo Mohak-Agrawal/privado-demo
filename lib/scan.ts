@@ -94,7 +94,7 @@ ${input.code}
 """`
 
   const response = await client.models.generateContent({
-    model: "gemini-1.5-flash-8b",
+    model: "gemini-2.0-flash-lite",
     contents: userPrompt,
     config: {
       systemInstruction: SYSTEM_PROMPT,
