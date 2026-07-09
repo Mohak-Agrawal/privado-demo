@@ -2,6 +2,10 @@
 
 import { useState } from "react"
 
+const DEMO_KEY = "__demo__"
+
+export { DEMO_KEY }
+
 export default function ApiKeyGate({ onKey }: { onKey: (key: string) => void }) {
   const [value, setValue] = useState("")
   const [error, setError] = useState("")
@@ -72,6 +76,15 @@ export default function ApiKeyGate({ onKey }: { onKey: (key: string) => void }) 
               Start Application
             </button>
           </form>
+
+          <div className="mt-4 pt-4 border-t border-[#1E1E2E]">
+            <button
+              onClick={() => onKey(DEMO_KEY)}
+              className="w-full py-2 rounded-lg border border-[#1E1E2E] text-xs font-medium text-[#475569] hover:text-[#94A3B8] hover:border-[#2D2D3D] transition-all cursor-pointer"
+            >
+              Try Demo Mode (sample data, no key needed)
+            </button>
+          </div>
         </div>
 
         <p className="text-center text-[11px] text-[#334155] mt-4">

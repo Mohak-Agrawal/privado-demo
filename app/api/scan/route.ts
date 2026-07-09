@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { scanCode, MOCK_RESULT } from "@/lib/scan"
 
 const MAX_CODE_BYTES = 500_000
+const DEMO_KEY = "__demo__"
 
 export async function POST(req: NextRequest) {
   let body: { code?: string; filename?: string }
@@ -24,6 +25,18 @@ export async function POST(req: NextRequest) {
   }
 
   const apiKey = req.headers.get("x-gemini-key") ?? process.env.GEMINI_API_KEY ?? ""
+
+  if (apiKey === DEMO_KEY) {
+    return NextResponse.json({
+      ...MOCK_RESULT,
+      findings: MOCK_RESULT.findings.map((f) => ({
+        ...f,
+        location: { ...f.location, file: body.filename! },
+      })),
+      _isMock: true,
+      _mockReason: "Demo mode — sample data for illustration",
+    })
+  }
 
   try {
     const result = await scanCode({ code: body.code, filename: body.filename }, apiKey)
